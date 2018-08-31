@@ -31,22 +31,6 @@ import analysis.topology.uniform_space
 import analysis.topology.continuity
 import data.set.function
 
-
-section
-variables {α : Type*} {β : Type*} [s : setoid α]
-
-lemma quotient.prod_preimage_eq_image (g : quotient s → β) {h : α → β} (Hh : h = g ∘ quotient.mk) (r : set (β × β)) :
-  {x : quotient s × quotient s | (g x.1, g x.2) ∈ r} =
-  (λ a : α × α, (⟦a.1⟧, ⟦a.2⟧)) '' ((λ a : α × α, (h a.1, h a.2)) ⁻¹' r) :=
-  Hh.symm ▸
-  set.ext (λ ⟨a₁, a₂⟩, ⟨quotient.induction_on₂ a₁ a₂
-    (λ a₁ a₂ h, ⟨(a₁, a₂), h, rfl⟩),
-    λ ⟨⟨b₁, b₂⟩, h₁, h₂⟩, show (g a₁, g a₂) ∈ r, from
-    have h₃ : ⟦b₁⟧ = a₁ ∧ ⟦b₂⟧ = a₂ := prod.ext_iff.1 h₂,
-     h₃.1 ▸ h₃.2 ▸ h₁⟩)
-end
-
-
 local attribute [instance, priority 0] classical.prop_decidable
 
 local attribute [instance] separation_setoid
@@ -195,7 +179,7 @@ begin
 
   rw filter.mem_map,
   dsimp[completion],
-  rw quotient.prod_preimage_eq_image _ rfl r, 
+  rw prod_quotient_preimage_eq_image _ rfl r, 
   exact filter.image_mem_map (g₀_unif r_in)
 end
 
