@@ -13,7 +13,7 @@ Basic constructions for topological groups:
 -/
 import data.set.basic data.set.function
 import algebra.pi_instances
-import analysis.topology.completion
+import analysis.topology.topological_structures
 noncomputable theory
 
 open filter
