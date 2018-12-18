@@ -179,38 +179,3 @@ instance topological_ring_quotient : topological_ring N.quotient :=
     (quotient_map.continuous_iff (quotient_ring.quotient_map_coe_coe N)).2 cont }
 
 end topological_ring
-
-namespace uniform_space
-
-lemma ring_sep_rel (α) [comm_ring α] [uniform_space α] [uniform_add_group α] [topological_ring α] :
-  separation_setoid α = submodule.quotient_rel (ideal.closure ⊥) :=
-setoid.ext $ assume x y, group_separation_rel x y
-
-lemma ring_sep_quot (α) [r : comm_ring α] [uniform_space α] [uniform_add_group α] [topological_ring α] :
-  quotient (separation_setoid α) = (⊥ : ideal α).closure.quotient :=
-by rw [@ring_sep_rel α r]; refl
-
-def sep_quot_equiv_ring_quot (α)
-  [r : comm_ring α] [uniform_space α] [uniform_add_group α] [topological_ring α] :
-  quotient (separation_setoid α) ≃ (⊥ : ideal α).closure.quotient :=
-quotient.congr $ assume x y, group_separation_rel x y
-
-/- TODO: use a form of transport a.k.a. lift definition a.k.a. transfer -/
-instance [comm_ring α] [uniform_space α] [uniform_add_group α] [topological_ring α] :
-  comm_ring (quotient (separation_setoid α)) :=
-by rw ring_sep_quot α; apply_instance
-
-instance [comm_ring α] [uniform_space α] [uniform_add_group α] [topological_ring α] :
-  topological_ring (quotient (separation_setoid α)) :=
-begin
-  convert topological_ring_quotient (⊥ : ideal α).closure,
-  { apply ring_sep_rel },
-  { dsimp [topological_ring_quotient_topology, quotient.topological_space, to_topological_space],
-    congr,
-    apply ring_sep_rel,
-    apply ring_sep_rel },
-  { apply ring_sep_rel },
-  { simp [uniform_space.comm_ring] },
-end
-
-end uniform_space
