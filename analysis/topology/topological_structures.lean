@@ -340,19 +340,57 @@ end
 
 section
 variables (α)
-lemma uniformity_eq_comap_nhds_zero : uniformity = comap (λx:α×α, x.2 - x.1) (nhds (0:α)) :=
+lemma uniformity_eq_right_uniformity : uniformity = comap (λx:α×α, x.2 - x.1) (nhds (0:α)) :=
 begin
-  rw [nhds_eq_comap_uniformity, filter.comap_comap_comp],
-  refine le_antisymm (filter.map_le_iff_le_comap.1 _) _,
-  { assume s hs,
+  suffices : uniformity = comap (λ (x : α × α), ((0 : α), x.2 - x.1)) uniformity,
+  by rwa [nhds_eq_comap_uniformity, filter.comap_comap_comp],
+  apply le_antisymm,
+  { intros s hs,
+    rcases mem_comap_sets.1 hs with ⟨u, hu, hus⟩,
+    rcases mem_uniformity_of_uniform_continuous_invarant uniform_continuous_sub' hu with ⟨t, ht, hts⟩,
+    have key : t ⊆ (λ (x : α × α), ((0 : α), x.2 - x.1)) ⁻¹' u,
+    { rw subset_def,
+      rintros ⟨a, b⟩ ab_in, 
+      simpa using hts a b a ab_in, },
+    exact mem_sets_of_superset (mem_sets_of_superset ht key) hus },
+  { intros s hs,
     rcases mem_uniformity_of_uniform_continuous_invarant uniform_continuous_sub' hs with ⟨t, ht, hts⟩,
-    refine mem_map.2 (mem_sets_of_superset ht _),
-    rintros ⟨a, b⟩,
-    simpa [subset_def] using hts a b a },
-  { assume s hs,
-    rcases mem_uniformity_of_uniform_continuous_invarant uniform_continuous_add' hs with ⟨t, ht, hts⟩,
-    refine ⟨_, ht, _⟩,
-    rintros ⟨a, b⟩, simpa [subset_def] using hts 0 (b - a) a }
+    have key : (λ (x : α × α), ((0 : α), x.2 - x.1)) ⁻¹' t ⊆ s,
+    { rw subset_def,
+      rintros ⟨a, b⟩ ab_in,
+      simpa using hts 0 (b-a) (-a) ab_in },
+    exact ⟨_, ht, key⟩ }
+end
+
+lemma uniformity_eq_left_uniformity : uniformity = comap (λx:α×α, -x.1 + x.2) (nhds (0:α)) :=
+begin
+  suffices : uniformity = comap (λ (x : α × α), ((0 : α), -x.1 + x.2)) uniformity,
+  by rwa [nhds_eq_comap_uniformity, filter.comap_comap_comp],
+  let F := (λ x y : α, -y+x),
+  have uc : uniform_continuous (λ p : α × α, F p.1 p.2), 
+  { rw show F = (λ x y, -(- x + y)), by ext ; simp[F],
+    exact uniform_continuous_neg (uniform_continuous_add 
+      (uniform_continuous_fst.comp uniform_continuous_neg') 
+      uniform_continuous_snd) },
+  let F' := (λ x y : α, y+x),
+  have uc' : uniform_continuous (λ p : α × α, F' p.1 p.2) :=
+    uniform_continuous_add uniform_continuous_snd uniform_continuous_fst,
+  apply le_antisymm,
+  { intros s hs,
+    rcases mem_comap_sets.1 hs with ⟨u, hu, hus⟩,
+    rcases mem_uniformity_of_uniform_continuous_invarant uc hu with ⟨t, ht, hts⟩,
+    have key : t ⊆ (λ (x : α × α), ((0 : α), -x.1 + x.2)) ⁻¹' u,
+    { rw subset_def,
+      rintros ⟨a, b⟩ ab_in, 
+      simpa [F] using hts (a) (b) (a) ab_in, },
+    exact mem_sets_of_superset (mem_sets_of_superset ht key) hus },
+  { intros s hs,
+    rcases mem_uniformity_of_uniform_continuous_invarant uc' hs with ⟨t, ht, hts⟩,
+    have key : (λ (x : α × α), ((0 : α), -x.1 + x.2)) ⁻¹' t ⊆ s,
+    { rw subset_def,
+      rintros ⟨a, b⟩ ab_in,
+      simpa [F'] using hts 0 (-a+b) a ab_in },
+    exact ⟨_, ht, key⟩ }
 end
 end
 
@@ -360,7 +398,7 @@ lemma group_separation_rel (x y : α) : (x, y) ∈ separation_rel α ↔ x - y �
 have embedding (λa, a + (y - x)), from (uniform_embedding_translate (y - x)).embedding,
 show (x, y) ∈ ⋂₀ uniformity.sets ↔ x - y ∈ closure ({0} : set α),
 begin
-  rw [this.closure_eq_preimage_closure_image, uniformity_eq_comap_nhds_zero α, sInter_comap_sets],
+  rw [this.closure_eq_preimage_closure_image, uniformity_eq_right_uniformity α, sInter_comap_sets],
   simp [mem_closure_iff_nhds, inter_singleton_eq_empty]
 end
 
@@ -370,7 +408,7 @@ lemma uniform_continuous_of_tendsto_zero [uniform_space β] [add_group β] [unif
 begin
   have : ((λx:β×β, x.2 - x.1) ∘ (λx:α×α, (f x.1, f x.2))) = (λx:α×α, f (x.2 - x.1)),
   { simp only [is_add_group_hom.sub f] },
-  rw [uniform_continuous, uniformity_eq_comap_nhds_zero α, uniformity_eq_comap_nhds_zero β,
+  rw [uniform_continuous, uniformity_eq_right_uniformity α, uniformity_eq_right_uniformity β,
     tendsto_comap_iff, this],
   exact tendsto.comp tendsto_comap h
 end

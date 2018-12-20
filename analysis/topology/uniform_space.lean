@@ -26,6 +26,7 @@ The formalization is mostly based on the books:
   I. M. James: Topologies and Uniformities
 A major difference is that this formalization is heavily based on the filter library.
 -/
+import tactic.converter.interactive
 import order.filter data.quot analysis.topology.topological_space analysis.topology.continuity
 open set lattice filter classical
 local attribute [instance] prop_decidable
@@ -486,18 +487,18 @@ lemma uniform_embedding.dense_embedding [uniform_space β] {f : α → β}
 
 lemma uniform_continuous.continuous [uniform_space β] {f : α → β}
   (hf : uniform_continuous f) : continuous f :=
-continuous_iff_tendsto.mpr $ assume a,
-calc map f (nhds a) ≤
-    (map (λp:α×α, (f p.1, f p.2)) uniformity).lift' (λs:set (β×β), {y | (f a, y) ∈ s}) :
-  begin
-    rw [nhds_eq_uniformity, map_lift'_eq, map_lift'_eq2],
-    exact (lift'_mono' $ assume s hs b ⟨a', (ha' : (_, a') ∈ s), a'_eq⟩,
-      ⟨(a, a'), ha', show (f a, f a') = (f a, b), from a'_eq ▸ rfl⟩),
-    exact monotone_preimage,
-    exact monotone_preimage
-  end
-  ... ≤ nhds (f a) :
-    by rw [nhds_eq_uniformity]; exact lift'_mono hf (le_refl _)
+let ff := (λ p : α×α, (f p.1, f p.2)) in
+continuous_iff_tendsto.mpr $ λ a,
+have key : prod.mk (f a) ∘ f = ff ∘ prod.mk a, by ext x ; simp,
+have map ff uniformity ≤ uniformity, from hf,
+have uniformity ≤ comap ff uniformity, from map_le_iff_le_comap.1 this,
+have comap (prod.mk a) (@uniformity α _) ≤ (comap (prod.mk a) (comap ff uniformity)), from comap_mono this,
+let ineq := calc
+nhds a ≤ comap (ff ∘ prod.mk a) uniformity : by rwa [comap_comap_comp, ←nhds_eq_comap_uniformity] at this
+   ... ≤ comap (prod.mk (f a) ∘ f) uniformity : by simp[key, le_refl]
+   ... ≤ comap f (comap (prod.mk (f a)) uniformity) : by rw ←comap_comap_comp ; exact le_refl _
+   ... ≤ comap f (nhds (f a)) : by rw ←nhds_eq_comap_uniformity ; exact le_refl _ in
+tendsto_iff_comap.2 ineq
 
 lemma closure_image_mem_nhds_of_uniform_embedding
   [uniform_space α] [uniform_space β] {s : set (α×α)} {e : α → β} (b : β)
@@ -1350,17 +1351,35 @@ have map (λp:(α×α)×(β×β), ((p.1.1, p.2.1), (p.1.2, p.2.2))) =
     (funext $ assume ⟨⟨_, _⟩, ⟨_, _⟩⟩, rfl) (funext $ assume ⟨⟨_, _⟩, ⟨_, _⟩⟩, rfl),
 by rw [this, uniformity_prod, filter.prod, comap_inf, comap_comap_comp, comap_comap_comp]
 
-lemma mem_uniformity_of_uniform_continuous_invarant [uniform_space α] {s:set (α×α)} {f : α → α → α}
-  (hf : uniform_continuous (λp:α×α, f p.1 p.2)) (hs : s ∈ (@uniformity α _).sets) :
-  ∃u∈(@uniformity α _).sets, ∀a b c, (a, b) ∈ u → (f a c, f b c) ∈ s :=
+lemma uniform_continuous₂_iff [uniform_space α] [uniform_space β] [uniform_space γ]
+{f : α → β → γ}  :
+let π_α : (α × β) × (α × β) → α × α := (λ p, (p.1.1, p.2.1)),
+    π_β : (α × β) × (α × β) → β × β := (λ p, (p.1.2, p.2.2)),
+    F   : (α × β) × (α × β) → γ × γ := (λ p, (f p.1.1 p.1.2, f p.2.1 p.2.2)) in
+uniform_continuous (λp:α×β, f p.1 p.2) ↔ map F (comap π_α uniformity ⊓ comap π_β uniformity) ≤ uniformity :=
+by simp [uniform_continuous,uniformity_prod, tendsto]
+
+lemma partial_ev_uniformly_uniform_continuous [uniform_space α] [uniform_space β] [uniform_space γ]
+{f : α → β → γ} (hf : uniform_continuous (λp:α×β, f p.1 p.2)) :
+let π_α : (α × β) × (α × β) → α × α := λ p, (p.1.1, p.2.1),
+    π_β : (α × β) × (α × β) → β × β := λ p, (p.1.2, p.2.2),
+    F   : (α × β) × (α × β) → γ × γ := λ p, (f p.1.1 p.1.2, f p.2.1 p.2.2) in
+  map F (comap π_α uniformity ⊓ comap π_β (principal id_rel)) ≤ uniformity :=
+le_trans (map_mono $ inf_le_inf (le_refl _) $ comap_mono refl_le_uniformity) (uniform_continuous₂_iff.1 hf)
+
+
+lemma mem_partial_ev_uniformly_uniform_continuous [uniform_space α] [uniform_space β] [uniform_space γ]
+  {s:set (γ×γ)} {f : α → β → γ} (hf : uniform_continuous (λp:α×β, f p.1 p.2))
+  (hs : s ∈ (@uniformity γ _).sets) :
+  ∃ u ∈ (@uniformity α _).sets, ∀ a a' b, (a, a') ∈ u → (f a b, f a' b) ∈ s :=
 begin
-  rw [uniform_continuous, uniformity_prod_eq_prod, tendsto_map'_iff, (∘)] at hf,
-  rcases mem_map_sets_iff.1 (hf hs) with ⟨t, ht, hts⟩, clear hf,
-  rcases mem_prod_iff.1 ht with ⟨u, hu, v, hv, huvt⟩, clear ht,
-  refine ⟨u, hu, assume a b c hab, hts $ (mem_image _ _ _).2 ⟨⟨⟨a, b⟩, ⟨c, c⟩⟩, huvt ⟨_, _⟩, _⟩⟩,
-  exact hab,
-  exact refl_mem_uniformity hv,
-  refl
+  have key := mem_inf_sets.1 (mem_map.1 $ partial_ev_uniformly_uniform_continuous hf hs),
+  rcases key with ⟨t, ⟨u, hu, hut⟩, v, ⟨w, hw, hwv⟩, htv⟩,
+  use [u, hu],
+  intros a a' b haa',
+  rw [mem_principal_sets, id_rel_subset] at hw,
+  have : ((a, b), (a', b)) ∈ t ∩ v := by split ; tauto, 
+  exact htv this,
 end
 
 lemma mem_uniform_prod [t₁ : uniform_space α] [t₂ : uniform_space β] {a : set (α × α)} {b : set (β × β)}

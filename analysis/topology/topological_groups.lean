@@ -72,7 +72,7 @@ def topological_add_group.to_uniform_space : uniform_space G :=
 section
 local attribute [instance] topological_add_group.to_uniform_space
 
-lemma uniformity_eq_comap_nhds_zero' : uniformity = comap (λp:G×G, p.2 - p.1) (nhds (0 : G)) := rfl
+lemma uniformity_eq_right_uniformity' : uniformity = comap (λp:G×G, p.2 - p.1) (nhds (0 : G)) := rfl
 
 variable {G}
 lemma topological_add_group_is_uniform : uniform_add_group G :=
@@ -84,7 +84,7 @@ have tendsto
 begin
   constructor,
   rw [uniform_continuous, uniformity_prod_eq_prod, tendsto_map'_iff,
-    uniformity_eq_comap_nhds_zero' G, tendsto_comap_iff, prod_comap_comap_eq],
+    uniformity_eq_right_uniformity' G, tendsto_comap_iff, prod_comap_comap_eq],
   simpa [(∘)]
 end
 end
@@ -94,7 +94,7 @@ lemma to_uniform_space_eq [u : uniform_space α] [add_comm_group α] [uniform_ad
 begin
   ext : 1,
   show @uniformity α (topological_add_group.to_uniform_space α) = uniformity,
-  rw [uniformity_eq_comap_nhds_zero' α, uniformity_eq_comap_nhds_zero α]
+  rw [uniformity_eq_right_uniformity' α, uniformity_eq_right_uniformity α]
 end
 
 end topological_add_comm_group

@@ -1589,7 +1589,7 @@ begin
   { suffices : map (λ (p : (β × δ) × (β × δ)), φ p.2 - φ p.1)
       (comap (λ (p : (β × δ) × β × δ), ((e p.1.1, f p.1.2), (e p.2.1, f p.2.2)))
          (filter.prod (nhds (x₀, y₀)) (nhds (x₀, y₀)))) ≤ nhds 0,
-    by rwa [uniformity_eq_comap_nhds_zero G, prod_map_map_eq, ←map_le_iff_le_comap, filter.map_map,
+    by rwa [uniformity_eq_right_uniformity G, prod_map_map_eq, ←map_le_iff_le_comap, filter.map_map,
         prod_comap_comap_eq],
 
     intros W' W'_nhd,

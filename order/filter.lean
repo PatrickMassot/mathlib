@@ -699,6 +699,20 @@ le_antisymm
   (assume c ⟨b, ⟨a, ha, (h₁ : preimage n a ⊆ b)⟩, (h₂ : preimage m b ⊆ c)⟩,
     ⟨a, ha, show preimage m (preimage n a) ⊆ c, from subset.trans (preimage_mono h₁) h₂⟩)
 
+lemma mem_comap_sets_of_injective (h : ∀ a a', m a = m a' → a = a') : 
+  s ∈ (comap m g).sets ↔ ∃ t ∈ g.sets, m ⁻¹' t = s := 
+begin
+  rw mem_comap_sets,
+  split ; rintros ⟨t, ht, hts⟩,
+  { use t ∪ m '' s,
+    split,
+    { simp [mem_sets_of_superset ht] },
+    { rw [preimage_union, preimage_image_eq _ h],
+      exact union_eq_self_of_subset_left hts } },
+  { use [t, ht],
+    rwa hts }
+end
+
 @[simp] theorem comap_principal {t : set β} : comap m (principal t) = principal (m ⁻¹' t) :=
 filter_eq $ set.ext $ assume s,
   ⟨assume ⟨u, (hu : t ⊆ u), (b : preimage m u ⊆ s)⟩, subset.trans (preimage_mono hu) b,
