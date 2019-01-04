@@ -441,52 +441,53 @@ meta def sep_quot_tac : tactic unit :=
   repeat { assumption } ]
 
 lemma map₂_const_left_eq_map {f : α → β → γ} (hf : separated_map₂ f) 
-{g : β → γ} (hg : separated_map g) (a : α)
-(H : ∀ b, f a b = g b) : ∀ b, map₂ f ⟦a⟧ b = map g b :=
+  {g : β → γ} (hg : separated_map g) (a : α)
+  (H : ∀ b, f a b = g b) : ∀ b, map₂ f ⟦a⟧ b = map g b :=
 by sep_quot_tac
 
 lemma map₂_const_right_eq_map {f : α → β → γ} (hf : separated_map₂ f) 
-{g : α → γ} (hg : separated_map g) (b : β)
-(H : ∀ a, f a b = g a) : ∀ a, map₂ f a ⟦b⟧ = map g a :=
+  {g : α → γ} (hg : separated_map g) (b : β)
+  (H : ∀ a, f a b = g a) : ∀ a, map₂ f a ⟦b⟧ = map g a :=
 by sep_quot_tac
 
 lemma map₂_map_left_self_const {f : α → β → γ} (hf : separated_map₂ f) 
-{g : β → α} (hg : separated_map g) (c : γ)
-(H : ∀ b, f (g b) b = c) : ∀ b, map₂ f (map g b) b = ⟦c⟧ :=
+  {g : β → α} (hg : separated_map g) (c : γ)
+  (H : ∀ b, f (g b) b = c) : ∀ b, map₂ f (map g b) b = ⟦c⟧ :=
 by sep_quot_tac
 
 lemma map₂_map_right_self_const {f : α → β → γ} (hf : separated_map₂ f) 
-{g : α → β} (hg : separated_map g) (c : γ)
-(H : ∀ a, f a (g a) = c) : ∀ a, map₂ f a (map g a) = ⟦c⟧ :=
+  {g : α → β} (hg : separated_map g) (c : γ)
+  (H : ∀ a, f a (g a) = c) : ∀ a, map₂ f a (map g a) = ⟦c⟧ :=
 by sep_quot_tac
 
 lemma map₂_comm {f : α → α → β} (hf : separated_map₂ f) 
-(H : ∀ a b, f a b = f b a) : ∀ a b, map₂ f a b = map₂ f b a :=
+  (H : ∀ a b, f a b = f b a) : ∀ a b, map₂ f a b = map₂ f b a :=
 by sep_quot_tac
 
 lemma map₂_assoc {f : α → β → δ} (hf : separated_map₂ f) 
-{f' : β  → γ → δ'} (hf' : separated_map₂ f')
-{g : δ → γ → ε} (hg : separated_map₂ g)
-{g' : α → δ' → ε} (hg' : separated_map₂ g')
-(H : ∀ a b c, g (f a b) c = g' a (f' b c)) : ∀ a b c, map₂ g (map₂ f a b) c = map₂ g' a (map₂ f' b c) :=
+  {f' : β  → γ → δ'} (hf' : separated_map₂ f')
+  {g : δ → γ → ε} (hg : separated_map₂ g)
+  {g' : α → δ' → ε} (hg' : separated_map₂ g')
+  (H : ∀ a b c, g (f a b) c = g' a (f' b c)) : 
+  ∀ a b c, map₂ g (map₂ f a b) c = map₂ g' a (map₂ f' b c) :=
 by sep_quot_tac
 
 lemma map₂_left_distrib {f : α → β → δ} (hf : separated_map₂ f) 
-{f' : α  → γ → δ'} (hf' : separated_map₂ f')
-{g : δ → δ' → ε} (hg : separated_map₂ g)
-{f'' : β → γ → δ''} (hg : separated_map₂ f'')
-{g' : α → δ'' → ε} (hg : separated_map₂ g')
-(H : ∀ a b c, g' a (f'' b c) = g (f a b) (f' a c)) : ∀ a b c, 
- map₂ g' a (map₂ f'' b c) = map₂ g (map₂ f a b) (map₂ f' a c) :=
+  {f' : α  → γ → δ'} (hf' : separated_map₂ f')
+  {g : δ → δ' → ε} (hg : separated_map₂ g)
+  {f'' : β → γ → δ''} (hg : separated_map₂ f'')
+  {g' : α → δ'' → ε} (hg : separated_map₂ g')
+  (H : ∀ a b c, g' a (f'' b c) = g (f a b) (f' a c)) : 
+  ∀ a b c, map₂ g' a (map₂ f'' b c) = map₂ g (map₂ f a b) (map₂ f' a c) :=
 by sep_quot_tac
 
 lemma map₂_right_distrib {f : α → γ → δ} (hf : separated_map₂ f) 
-{f' : β → γ → δ'} (hf' : separated_map₂ f')
-{g : δ → δ' → ε} (hg : separated_map₂ g)
-{f'' : α → β → δ''} (hg : separated_map₂ f'')
-{g' : δ'' → γ → ε} (hg : separated_map₂ g')
-(H : ∀ a b c, g' (f'' a b) c = g (f a c) (f' b c)) : ∀ a b c, 
- map₂ g' (map₂ f'' a b) c = map₂ g (map₂ f a c) (map₂ f' b c) :=
+  {f' : β → γ → δ'} (hf' : separated_map₂ f')
+  {g : δ → δ' → ε} (hg : separated_map₂ g)
+  {f'' : α → β → δ''} (hg : separated_map₂ f'')
+  {g' : δ'' → γ → ε} (hg : separated_map₂ g')
+  (H : ∀ a b c, g' (f'' a b) c = g (f a c) (f' b c)) : 
+  ∀ a b c, map₂ g' (map₂ f'' a b) c = map₂ g (map₂ f a c) (map₂ f' b c) :=
 by sep_quot_tac
 end sep_quot
 
