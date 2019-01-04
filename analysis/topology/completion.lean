@@ -429,94 +429,47 @@ begin
   apply continuous.comp h continuous_quotient_mk
 end
 
--- Now begins a long series of lemmas for which I intend to write a ad hoc killing tactic. 
--- The tactic may even allow to be used directly without stating the lemmas.
+-- Now begins a long series of lemmas for which we use an ad hoc killing tactic. 
+
+meta def sep_quot_tac : tactic unit :=
+`[repeat { rintros ⟨x⟩ },
+  repeat { rw quot_mk_quotient_mk },
+  repeat { rw map_mk },
+  repeat { rw map₂_mk_mk },
+  repeat { rw map_mk },
+  repeat { rw H },
+  repeat { assumption } ]
 
 lemma map₂_const_left_eq_map {f : α → β → γ} (hf : separated_map₂ f) 
 {g : β → γ} (hg : separated_map g) (a : α)
 (H : ∀ b, f a b = g b) : ∀ b, map₂ f ⟦a⟧ b = map g b :=
-begin
-  rintros ⟨b⟩,
-  rw quot_mk_quotient_mk,
-  rw map₂_mk_mk,
-  rw map_mk,
-  rw H,
-  assumption,
-  assumption,
-end
+by sep_quot_tac
 
 lemma map₂_const_right_eq_map {f : α → β → γ} (hf : separated_map₂ f) 
 {g : α → γ} (hg : separated_map g) (b : β)
 (H : ∀ a, f a b = g a) : ∀ a, map₂ f a ⟦b⟧ = map g a :=
-begin
-  rintros ⟨a⟩,
-  rw quot_mk_quotient_mk,
-  rw map₂_mk_mk,
-  rw map_mk,
-  rw H,
-  assumption,
-  assumption,
-end
+by sep_quot_tac
 
 lemma map₂_map_left_self_const {f : α → β → γ} (hf : separated_map₂ f) 
 {g : β → α} (hg : separated_map g) (c : γ)
 (H : ∀ b, f (g b) b = c) : ∀ b, map₂ f (map g b) b = ⟦c⟧ :=
-begin
-  rintros ⟨b⟩,
-  rw quot_mk_quotient_mk,
-  rw map_mk,
-  rw map₂_mk_mk,
-  rw H,
-  assumption,
-  assumption,
-end
+by sep_quot_tac
 
 lemma map₂_map_right_self_const {f : α → β → γ} (hf : separated_map₂ f) 
 {g : α → β} (hg : separated_map g) (c : γ)
 (H : ∀ a, f a (g a) = c) : ∀ a, map₂ f a (map g a) = ⟦c⟧ :=
-begin
-  rintros ⟨b⟩,
-  rw quot_mk_quotient_mk,
-  rw map_mk,
-  rw map₂_mk_mk,
-  rw H,
-  assumption,
-  assumption,
-end
+by sep_quot_tac
 
 lemma map₂_comm {f : α → α → β} (hf : separated_map₂ f) 
 (H : ∀ a b, f a b = f b a) : ∀ a b, map₂ f a b = map₂ f b a :=
-begin
-  rintros ⟨a⟩ ⟨b⟩,
-  rw quot_mk_quotient_mk,
-  rw quot_mk_quotient_mk,
-  rw map₂_mk_mk,
-  rw map₂_mk_mk,
-  rw H,
-  assumption,
-  assumption,
-end
+by sep_quot_tac
 
 lemma map₂_assoc {f : α → β → δ} (hf : separated_map₂ f) 
 {f' : β  → γ → δ'} (hf' : separated_map₂ f')
 {g : δ → γ → ε} (hg : separated_map₂ g)
 {g' : α → δ' → ε} (hg' : separated_map₂ g')
 (H : ∀ a b c, g (f a b) c = g' a (f' b c)) : ∀ a b c, map₂ g (map₂ f a b) c = map₂ g' a (map₂ f' b c) :=
-begin
-  rintros ⟨a⟩ ⟨b⟩ ⟨c⟩,
-  rw quot_mk_quotient_mk,
-  rw quot_mk_quotient_mk,
-  rw quot_mk_quotient_mk,
-  rw map₂_mk_mk,
-  rw map₂_mk_mk,
-  rw map₂_mk_mk,
-  rw map₂_mk_mk,
-  rw H,
-  assumption,
-  assumption,
-  assumption,
-  assumption,
-end
+by sep_quot_tac
 
 lemma map₂_left_distrib {f : α → β → δ} (hf : separated_map₂ f) 
 {f' : α  → γ → δ'} (hf' : separated_map₂ f')
@@ -525,23 +478,7 @@ lemma map₂_left_distrib {f : α → β → δ} (hf : separated_map₂ f)
 {g' : α → δ'' → ε} (hg : separated_map₂ g')
 (H : ∀ a b c, g' a (f'' b c) = g (f a b) (f' a c)) : ∀ a b c, 
  map₂ g' a (map₂ f'' b c) = map₂ g (map₂ f a b) (map₂ f' a c) :=
-begin
-  rintros ⟨a⟩ ⟨b⟩ ⟨c⟩,
-  rw quot_mk_quotient_mk,
-  rw quot_mk_quotient_mk,
-  rw quot_mk_quotient_mk,
-  rw map₂_mk_mk,
-  rw map₂_mk_mk,
-  rw map₂_mk_mk,
-  rw map₂_mk_mk,
-  rw map₂_mk_mk,
-  rw H,
-  assumption,
-  assumption,
-  assumption,
-  assumption,
-  assumption
-end
+by sep_quot_tac
 
 lemma map₂_right_distrib {f : α → γ → δ} (hf : separated_map₂ f) 
 {f' : β → γ → δ'} (hf' : separated_map₂ f')
@@ -550,23 +487,7 @@ lemma map₂_right_distrib {f : α → γ → δ} (hf : separated_map₂ f)
 {g' : δ'' → γ → ε} (hg : separated_map₂ g')
 (H : ∀ a b c, g' (f'' a b) c = g (f a c) (f' b c)) : ∀ a b c, 
  map₂ g' (map₂ f'' a b) c = map₂ g (map₂ f a c) (map₂ f' b c) :=
-begin
-  rintros ⟨a⟩ ⟨b⟩ ⟨c⟩,
-  rw quot_mk_quotient_mk,
-  rw quot_mk_quotient_mk,
-  rw quot_mk_quotient_mk,
-  rw map₂_mk_mk,
-  rw map₂_mk_mk,
-  rw map₂_mk_mk,
-  rw map₂_mk_mk,
-  rw map₂_mk_mk,
-  rw H,
-  assumption,
-  assumption,
-  assumption,
-  assumption,
-  assumption
-end
+by sep_quot_tac
 end sep_quot
 
 end uniform_space
