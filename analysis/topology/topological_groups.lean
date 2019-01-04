@@ -5,11 +5,11 @@ Authors: Patrick Massot, Johannes Hölzl
 
 Basic constructions for topological groups:
 
-* `topological_add_group.to_uniform_space` and `topological_add_group_is_uniform` can be used to
+* `topological_add_group.right_uniformity` and `topological_add_group_is_uniform` can be used to
   construct a canonical uniformity for a topological add group.
 
 * `add_group_with_zero_nhd`: construct the topological structure from a group with a neighbourhood
-  around zero. Then with `topological_add_group.to_uniform_space` one can derive a `uniform_space`.
+  around zero. Then with `topological_add_group.right_uniformity` one can derive a `uniform_space`.
 -/
 import data.set.basic data.set.function
 import algebra.pi_instances
@@ -21,10 +21,10 @@ universes u v w x
 variables {α : Type u} {β : Type v} {γ : Type w} {δ : Type x}
 
 section topological_add_comm_group
-variables {G : Type u} [add_comm_group G] [topological_space G] [topological_add_group G]
+variables {G : Type u} [add_group G] [topological_space G] [topological_add_group G]
 
 variable (G)
-def topological_add_group.to_uniform_space : uniform_space G :=
+def topological_add_group.right_uniformity : uniform_space G :=
 { uniformity          := comap (λp:G×G, p.2 - p.1) (nhds 0),
   refl                :=
     by refine map_le_iff_le_comap.1 (le_trans _ (pure_le_nhds 0));
@@ -49,7 +49,7 @@ def topological_add_group.to_uniform_space : uniform_space G :=
       begin
         intros p p_comp_rel,
         rcases p_comp_rel with ⟨z, ⟨Hz1, Hz2⟩⟩,
-        simpa using V_sum _ _ Hz1 Hz2
+        simpa using V_sum _ _ Hz2 Hz1
       end,
       exact set.subset.trans comp_rel_sub U_sub },
     { exact monotone_comp_rel monotone_id monotone_id }
@@ -69,31 +69,32 @@ def topological_add_group.to_uniform_space : uniform_space G :=
     { rintros h x hx, exact @h (a, x) hx rfl }
   end }
 
-section
-local attribute [instance] topological_add_group.to_uniform_space
+section commutative_case
+-- We now prove that, in the commutative case, `topological_add_group.right_uniformity` gives a uniform add group
+local attribute [instance] topological_add_group.right_uniformity
 
 lemma uniformity_eq_right_uniformity' : uniformity = comap (λp:G×G, p.2 - p.1) (nhds (0 : G)) := rfl
 
-variable {G}
-lemma topological_add_group_is_uniform : uniform_add_group G :=
+variables {H : Type u} [add_comm_group H] [topological_space H] [topological_add_group H]
+lemma topological_add_group_is_uniform : uniform_add_group H :=
 have tendsto
-    ((λp:(G×G), p.1 - p.2) ∘ (λp:(G×G)×(G×G), (p.1.2 - p.1.1, p.2.2 - p.2.1)))
-    (comap (λp:(G×G)×(G×G), (p.1.2 - p.1.1, p.2.2 - p.2.1)) ((nhds 0).prod (nhds 0)))
+    ((λp:(H×H), p.1 - p.2) ∘ (λp:(H×H)×(H×H), (p.1.2 - p.1.1, p.2.2 - p.2.1)))
+    (comap (λp:(H×H)×(H×H), (p.1.2 - p.1.1, p.2.2 - p.2.1)) ((nhds 0).prod (nhds 0)))
     (nhds (0 - 0)) :=
   tendsto_comap.comp (tendsto_sub tendsto_fst tendsto_snd),
 begin
   constructor,
   rw [uniform_continuous, uniformity_prod_eq_prod, tendsto_map'_iff,
-    uniformity_eq_right_uniformity' G, tendsto_comap_iff, prod_comap_comap_eq],
+    uniformity_eq_right_uniformity' H, tendsto_comap_iff, prod_comap_comap_eq],
   simpa [(∘)]
 end
-end
+end commutative_case
 
 lemma to_uniform_space_eq [u : uniform_space α] [add_comm_group α] [uniform_add_group α]:
-  topological_add_group.to_uniform_space α = u :=
+  topological_add_group.right_uniformity α = u :=
 begin
   ext : 1,
-  show @uniformity α (topological_add_group.to_uniform_space α) = uniformity,
+  show @uniformity α (topological_add_group.right_uniformity α) = uniformity,
   rw [uniformity_eq_right_uniformity' α, uniformity_eq_right_uniformity α]
 end
 
